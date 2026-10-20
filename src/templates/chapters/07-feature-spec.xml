@@ -1,0 +1,273 @@
+<section id="7" title="Feature-Level Specification">
+  <description>
+- For every feature listed in Section 6.1, provide a detailed design using the same Fx ID and feature name.
+- Each subsection must match the feature ID, name, and priority defined in Section 6.1.
+- No additional features beyond those in Section 6.1 may be specified here.
+- Connect every Feature to the Section 3 end-to-end demo with one observable Demo outcome under Evaluation Rubric.
+- Write for a junior developer seeing the Feature for the first time. Use plain language, explain unfamiliar acronyms and domain or technical terms on first use, and make the actor, action, conceptual data, and user-visible result understandable without reading code.
+- When multiple participants or layers make a flow easier to understand visually, recommend a concise Mermaid diagram in 7.x.3. Prefer `sequenceDiagram` for request, data, and response flow across UI, API, data stores, and external systems.
+- Feature diagrams are optional. Their absence never blocks approval, saving, or completion. Keep them at product-requirement resolution and exclude modules, classes, functions, schemas, libraries, and algorithms.
+
+- SCOPE — this section captures REPRODUCIBLE REQUIREMENTS, not implementation decisions:
+  - WRITE here (the WHAT, reproducibly): what each user action must do, which layers it crosses (UI → API → data), what must be true for it to be correct (acceptance criteria, edge cases, error responses the user sees), and the VALUES AND RULES the result must honor — limits, quotas, retention periods, size caps, permission rules, allowed value sets and forbidden transitions, mandatory inputs, uniqueness, units — each with its number (where it has one) and basis (pricing policy, security rule, regulation).
+  - DO NOT write here (the WHY/HOW — these belong to an ADR or to the code): why a particular library / algorithm / key design was chosen, alternatives considered, trade-offs, tuning constants, exact column lists, or framework-specific snippets.
+  - Rule of thumb: if a sentence would still be true after the team swaps the database or the hashing library, it belongs here. If it justifies *that choice*, it belongs in an ADR.
+  - The two lists split on one question: **would a developer picking a different value break the requirement?** "Max 20 turns per session" survives any rewrite, so it is a requirement and stays. "Connection pool of 10" does not, so it is a tuning constant and goes. The same question covers non-numeric requirements — allowed value sets and forbidden transitions, mandatory inputs, visibility rules, uniqueness, units: "a cancelled order can never move to shipping" stays, while the enum identifier holding that state goes (the set is the requirement, the name is the code's). Never soften a requirement into "reasonably limited", "an appropriate period", or "the status is managed" — this section is where it enters the pipeline, and blurring it here lets the implementation invent its own.
+  - `/feature-to-adr` transfers every implementation-relevant Feature contract into one or several ADRs. After transfer, ADRs are the implementation authority and this PRD remains a legacy planning document. A later PRD edit affects implementation only when the user explicitly re-imports it and approves a semantic ADR contract change.
+  </description>
+  <template id="7.x" title="Feature Template">
+    <header>Feature ID: Fx | Priority: Must-Have / Should-Have / Nice-to-Have</header>
+    <subsection id="7.x.1" title="User Story">
+      <description>
+- Describe the user scenario for implementing this feature.
+- Use this format: As a [persona], I want to [action], so that [benefit].
+- Explain the problem and intended outcome clearly enough to guide later autonomous choices about unspecified details. Preserve supplied priorities or scope that distinguish a useful implementation from one pursuing a different purpose; do not invent exclusions or a new intent subsection.
+      </description>
+      <example>
+- As a new user, I want to sign up with my email, so that I can access the service.
+      </example>
+    </subsection>
+    <subsection id="7.x.2" title="User Flow">
+      <description>
+- Describe the user flow for this feature.
+- Keep the flow simple and concise.
+- Use terms a first-time junior developer can follow. Explain unfamiliar terms when they first appear instead of assuming product knowledge.
+      </description>
+      <example>
+1. Display a sign-up form with:
+   - Email input field
+   - Password input field
+   - "Sign Up" button
+2. When the user submits the form:
+   - Validate input
+   - Trigger an API call
+   - Redirect to the main screen upon successful sign-up
+      </example>
+    </subsection>
+    <subsection id="7.x.3" title="Technical Description">
+      <description>
+- Describe the implementation as a vertical slice: trace each user action end-to-end from UI through API to data store, so this feature can be developed and tested independently.
+- For each key action in the user flow, describe WHAT happens at each layer it touches (UI / API / data) — at the level of behavior and responsibility, not implementation.
+- Make the explanation independently understandable to a junior developer seeing the Feature for the first time: identify the actor, action, conceptual data, and user-visible result, and explain unfamiliar acronyms or domain and technical terms on first use.
+- When multiple participants or layers make the flow easier to understand visually, recommend and normally include a concise Mermaid diagram. Prefer `sequenceDiagram` for request, data, and response flow across the user, UI, API, data store, and external systems. Use another Mermaid type only when state, branching, or conceptual relationships are clearer that way.
+- The diagram is optional and its absence never blocks approval, saving, or completion. It supplements rather than replaces the prose and must not repeat the entire flow.
+- Keep diagram participants and messages at product-requirement resolution. Do not include modules, classes, functions, fields, schemas, libraries, algorithms, or other implementation detail.
+- Stay reproducible, stay decision-free:
+  - DO state: the action, the layers it crosses, the data it reads/writes (conceptually), what is returned to the user, any shared interface this feature relies on (e.g., "uses the shared auth session", "writes to the user record"), and any value or rule the result must honor (a limit, quota, retention period, size cap, permission rule, allowed value set, forbidden transition, mandatory input, uniqueness, or unit) with its number — where it has one — and basis.
+  - DO NOT state: chosen libraries/algorithms (e.g., bcrypt, JWT), exact column lists, tuning constants (pool sizes, backoff delays, cache lifetimes), or why one approach was picked over another — those are architectural decisions (→ ADR) or implementation details (→ code), and pinning them here makes the PRD churn whenever the code does.
+  - A requirement value is not a tuning constant: "a free-plan user may upload 5 files per month (pricing policy)" is a requirement and belongs here; "the upload retries 3 times" is a tuning constant and does not.
+  - Requirements are not only numbers: allowed value sets and forbidden transitions, mandatory inputs, who may see what, uniqueness, and units are requirements too. "An order is one of paid / shipping / delivered / cancelled, and a cancelled order never moves to shipping" belongs here; the enum identifier that holds those states does not.
+  - Keep API references at the endpoint level (method + path + purpose); leave request/response schemas to the code.
+- If this feature shares resources with other features (e.g., a common table or auth middleware), note the shared interface rather than redefining it.
+      </description>
+      <example>
+1. Submit Sign-up Form
+   - UI (User Interface — the screen the user interacts with): the sign-up form sends the email and password to the sign-up endpoint (POST /api/auth/signup)
+   - API (Application Programming Interface — the system boundary that processes the request): validates the input, rejects duplicate emails, and creates the user with the password stored in non-recoverable (hashed) form
+   - Data store (where persistent account information is kept): a new user record is saved
+   - Response: the user is authenticated and lands on the main screen
+2. Validate Email (real-time)
+   - UI: as the user leaves the email field, checks availability (GET /api/auth/check-email)
+   - API: looks up whether the email is already taken
+   - Response: an inline message tells the user if the email is available
+
+Because account creation crosses several participants, this optional diagram
+makes the request, data, and response path easier to scan:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as Sign-up screen
+    participant API as Sign-up API
+    participant Data as User data store
+
+    User->>UI: Enter email and password
+    UI->>API: Request account creation
+    API->>Data: Check email and save new user
+    Data-->>API: Account saved
+    API-->>UI: Return authenticated session
+    UI-->>User: Open the main screen
+```
+
+Values the result must honor:
+
+- A password is at least 10 characters (security policy)
+- 5 consecutive failed sign-in attempts lock the account for 30 minutes (security policy)
+
+> This example uses the account scope from Section 6: email verification is outside the MVP, so it adds no verification or unverified-account deletion policy. The values above are illustrative supplied requirements, not defaults for another product.
+> How the password is hashed, the auth token format, and the user table's columns remain architectural/implementation choices. The stated password and lockout requirements stay exact in Evaluation Rubric.
+      </example>
+    </subsection>
+    <subsection id="7.x.4" title="Edge Cases">
+      <description>List potential edge cases and how they should be handled.</description>
+      <example>
+- User submits an already registered email → Show "Email already exists" error
+- User enters a password with less than 10 characters → Show validation error
+- Network timeout during API call → Show retry option
+      </example>
+    </subsection>
+    <subsection id="7.x.5" title="Error Handling">
+      <description>Define error scenarios and appropriate responses.</description>
+      <example>
+| Error Type | HTTP Code | User Message |
+|------------|-----------|--------------|
+| Validation failure | 400 | "Please check your input" |
+| Duplicate email | 409 | "Email already registered" |
+| Server error | 500 | "Something went wrong. Please try again." |
+      </example>
+    </subsection>
+    <subsection id="7.x.6" title="Evaluation Rubric">
+      <description>
+- Organize this rubric as Ideal Cases, Edge Cases, and Automated Evaluation Metrics. Cases define what to exercise and the evidence/rule for the result. Metrics define how related case outcomes or observations are measured and interpreted. Keep these inside 7.x.6, not new numbered subsections.
+
+**Ideal Cases — intended successful behavior**
+
+| Case and use | Given / input | Observe | Evaluator and rule |
+|--------------|---------------|---------|--------------------|
+| [Independent case; required or monitoring] | [Valid setup, user action and input] | [Expected user result or authoritative state] | [Code / user-flow evidence / narrow semantic check; explicit result rule] |
+
+**Edge Cases — relevant boundaries, invalid inputs and recovery**
+
+| Case and use | Given / input | Observe | Evaluator and rule |
+|--------------|---------------|---------|--------------------|
+| [Independent boundary or failure case] | [Relevant input or failure condition] | [Required rejection, recovery or preserved state] | [Explicit pass/fail rule and needed evidence] |
+
+**Automated Evaluation Metrics — measurements linked to the cases**
+
+| Eval metric | Tension metric, when useful | Evaluation method and scope | Decision and use |
+|-------------|-----------------------------|-----------------------------|------------------|
+| [Behavior measure, calculation, unit and direction] | [Same-purpose countermeasure and calculation, or no suitable candidate] | [Related cases/population, Code or LLM, observation window and exclusions] | [Required rule with its approved basis, or monitoring only] |
+
+- Cases may contain several observations needed to prove one outcome, but do not bundle independent obligations into one vague checkbox. Restate every value from 7.x.3 with its exact unit and rule. Preserve all declared permissions and failure guarantees in relevant normal, boundary and failure cases. Reuse existing User Flow, Edge Cases and Error Handling behavior rather than inventing policy.
+- Use code for known values, state, permissions, ordering and counts. UI obligations need actual user-entry evidence from action to result; API/unit tests, a build or a visible button do not replace it. API and command-line products use their own entry points.
+- Use LLM evaluation only for meaning: name the evaluated input, authoritative reference, narrow failure rule, supporting evidence and when judgment remains unverified. JSON or temperature 0 does not make LLM judgment deterministic. Only aggregation of fixed observations and criterion results can be deterministic.
+- Link each metric to the cases or observations it summarizes. Define its calculation, population/denominator, unit, direction, observation conditions, evaluator and required-versus-monitoring use. Show eval/tension pairs when they expose opposite shortcuts against the same purpose; do not invent a metric quota, target or irrelevant countermeasure. Boolean case results may be sufficient when a rate adds no useful information.
+- Tension metrics are encouraged, not mandatory. Their absence never blocks writing, approval, saving, implementation or improvement. Monitoring values are not automatically gates. An empty population, missing evidence or execution/judgment error is not 0 or a pass; preserve coverage and missingness instead of silently dropping cases.
+- Every required ideal and edge case must be established. Known required violations prevent completion; otherwise missing required evidence leaves completion unverified. A high aggregate score cannot cancel a required violation. Confirm any new required threshold and its basis before using it. Do not weaken criteria or remove difficult cases to improve a score.
+- Start from confirmed requirements and supplement evaluation with observed failures. Keep synthetic cases and AI labels distinct from real traces and human-confirmed judgments. Product rules stay here; commands, fixtures, evaluator code/prompts and run results stay at implementation resolution.
+- End with one **Demo outcome** sentence describing this Feature's role in the Section 3 end-to-end demo and the observable completion result. It connects the Feature to the whole journey; it is not another test or approval gate.
+- Do not repeat preconditions, user actions, or failure scenarios in full; retain the minimum evaluation setup for each case. When reading an existing document, treat Acceptance Criteria and Demo checkpoint as the legacy names for the same content, without reapproving or rewriting a completed unchanged Feature solely to rename it.
+      </description>
+      <example>
+**Ideal Cases — all cases in this example are required.**
+
+| Case and use | Given / input | Observe | Evaluator and rule |
+|--------------|---------------|---------|--------------------|
+| Account creation | An unregistered valid email and a valid password, including the 10-character boundary, are submitted | Account creation result for that email | Code: the account is created; a success message without the account is a violation |
+| Authenticated arrival | The user submits those valid inputs from the sign-up screen | Arrival at the main screen with authenticated user state | User-flow evidence + Code: both belong to the same completed signup; a unit test alone does not establish this case |
+
+**Edge Cases — all cases below are required.**
+
+Input and security boundaries:
+
+| Case and use | Given / input | Observe | Evaluator and rule |
+|--------------|---------------|---------|--------------------|
+| Password minimum | An otherwise valid signup uses a 9-character password; compare with the valid ideal case | Input rejection and validation feedback | Code: Password must be at least 10 characters; reject 9 characters while the otherwise-valid 10-character ideal case succeeds |
+| Email format | An otherwise valid signup uses an invalid email format | Input rejection with a validation message | Code: invalid email is rejected before account creation |
+| Account lockout | Consecutive failed sign-ins reach the policy boundary | Account lock state and duration | Code: A 5th consecutive failed sign-in locks the account for 30 minutes; compare the boundary and duration with recorded state |
+
+Rejection and recovery:
+
+| Case and use | Given / input | Observe | Evaluator and rule |
+|--------------|---------------|---------|--------------------|
+| Duplicate rejection | The submitted email already belongs to an account | Rejection and the original account | Code: duplicate signup is rejected and the existing account remains unchanged |
+| Retry after network timeout | The signup request times out | A visible retry option | User-flow evidence + Code: the user can choose to retry; generic error text alone is insufficient |
+| Server-error guidance | The signup service returns the declared server error | The error response and visible next action | User-flow evidence + Code: expose the declared server-error result and tell the user to try again, as specified by Error Handling |
+
+**Automated Evaluation Metrics**
+
+| Eval metric | Tension metric, when useful | Evaluation method and scope | Decision and use |
+|-------------|-----------------------------|-----------------------------|------------------|
+| Valid signup success rate increases: completed valid signups / evaluated valid signup attempts, as a percentage | Invalid-input acceptance rate decreases: invalid signup attempts incorrectly accepted / evaluated invalid signup attempts, as a percentage | Code + user-flow evidence. The account-creation/arrival ideal cases and password/email/duplicate edge cases define separate valid and invalid cohorts. Use the same stated observation window and classification rules across comparisons. | These rates are monitoring summaries, not new target thresholds. Every required case still has to satisfy its rule, including lockout and recovery cases outside these rate populations. Rejecting everything hurts the eval metric; accepting everything hurts the tension metric. |
+
+Report the requested/evaluated counts and missing observations with these rates. An empty cohort or unavailable judgment is unmeasured, not 0 or success. Do not exclude failed valid attempts or silently reclassify invalid attempts to improve the score. Confirmed validation and lockout rules remain binding.
+
+- **Demo outcome:** This Feature completes the account-creation step in the Section 3 journey; completion is visible when the new user reaches the main screen as an authenticated user.
+      </example>
+    </subsection>
+  </template>
+  <example>
+The following fictional Feature excerpt connects guided document authoring to its
+evaluation rubric; it is separate from the sign-up examples above.
+
+### 7.1 Feature A (F1: Template-based AI Document Writing)
+
+#### 7.1.1 User Story
+
+- When a user starts a conversation, AI guides document writing based on the ALPS (PRD) template
+- Users complete the document step by step following AI guidance
+
+#### 7.1.2 User Flow
+
+1. Welcome message and getting-started guide on app launch
+2. AI presents questions for the first chapter when user wants to create a new document
+3. After all chapters are complete, guide for final document save
+
+#### 7.1.3 Technical Description
+
+1. Start a new document
+   - UI (User Interface — the chat the user interacts with): the user asks to create a document
+   - API (Application Programming Interface — the system boundary that processes the request): the assistant uses the ALPS template as guidance and asks the first section's questions
+   - Data store (where persistent document information is kept): an in-progress document is created or loaded
+   - Response: the first question is shown to the user
+2. Answer a chapter
+   - UI: user replies in the chat
+   - API: the reply is integrated into the current section; the next question follows
+   - Data: the section content is saved after the user confirms
+
+Because this action crosses several participants, the draft can add this optional
+overview:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as Document chat
+    participant API as Document authoring service
+    participant Data as Document data store
+
+    User->>UI: Request a new document
+    UI->>API: Start guided authoring
+    API->>Data: Create the in-progress document
+    Data-->>API: Document is ready
+    API-->>UI: Return the first section question
+    UI-->>User: Show the question
+```
+
+Values the result must honor:
+
+- One document is capped at 9 sections — the ALPS template defines exactly nine
+- An unconfirmed draft is kept for 30 days, then discarded (storage-cost policy)
+- A section is saved only after explicit user confirmation (never auto-saved)
+
+Note: an LLM/provider boundary appears here only when Section 4 records it as a durable constraint; prompt wording and replaceable provider tooling are not repeated here. Retry counts and cache lifetimes are tuning constants and are likewise absent.
+
+#### 7.1.6 Evaluation Rubric
+
+**Ideal Cases — required:**
+
+| Case and use   | Given / input                           | Observe                                           | Evaluator and rule                                    |
+| -------------- | --------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
+| Confirmed save | The user confirms the displayed section | Persistence result corresponding to that approval | Code: that approved section is persisted exactly once |
+
+**Edge Cases — required:**
+
+| Case and use                | Given / input                                                                    | Observe                                     | Evaluator and rule                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Section-count limit         | A document reaches the 9-section boundary and an additional section is requested | Declared section count and rejection result | Code: the document remains capped at 9 sections; no 10th section is added               |
+| Draft retention             | An unconfirmed draft is observed before and at the 30-day expiry                 | Whether that draft is retained or discarded | Code: retain before 30 days and discard at expiry, using the stated storage-cost policy |
+| Approval before persistence | A draft has not received explicit user confirmation                              | Persistence actions for that draft          | Code: no section save occurs before confirmation                                        |
+| Incomplete draft            | A draft remains unapproved                                                       | Displayed section completion state          | User-flow evidence + Code: the draft is not shown as complete                           |
+
+**Automated Evaluation Metrics**
+
+| Eval metric                                                                                                                        | Tension metric, when useful                                                                                | Evaluation method and scope                                                                                                                                                                          | Decision and use                                                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Approved-save success rate increases: approved sections persisted exactly once / evaluated approved-save requests, as a percentage | Unapproved-save rate decreases: unapproved drafts persisted / evaluated unapproved drafts, as a percentage | Code + user-flow evidence. Use the confirmed-save ideal case and approval/completion edge cases, with fixed observation and classification rules. Report requested/evaluated counts and missingness. | Monitoring summaries only; no new percentage target. Every required case remains binding, including the 9-section limit and 30-day retention. Never turn an empty cohort or unavailable judgment into 0 or a pass. |
+
+These values belong to this supplied example, not defaults for every product.
+The metrics expose blocking every save and saving every draft as opposite shortcuts.
+A missing required observation leaves the corresponding case unverified.
+
+- **Demo outcome:** This Feature provides the guided authoring step in the Section 3 journey; completion is visible when the approved section appears and the next incomplete section becomes active.
+  </example>
+</section>

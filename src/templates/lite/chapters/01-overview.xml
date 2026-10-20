@@ -1,0 +1,17 @@
+<section id="1" title="Overview">
+  <subsection id="1.1" title="Target User and Core Problem">
+    <description>
+- Identify the main target user and the core problem this PoC should address.
+- Include the user's situation or current consequence when it helps explain the problem.
+- Mention the current workaround or evidence only when it materially clarifies the problem.
+    </description>
+  </subsection>
+  <subsection id="1.2" title="Desired Business Impact">
+    <description>
+- State the final business impact the target user should gain and why that matters.
+- Preserve a measurement signal when the user already has one. When a useful product-wide tension metric follows from that signal and the known purpose, propose it with the adverse outcome it would expose. Tension metrics protect the same purpose against over-optimizing the primary signal. Do not require any metric to complete the Section or start a separate metrics interview.
+- Do not ask for a solution, screen, starting state, user-action sequence, or demo procedure.
+- Do not invent business claims or measures the user did not provide or approve.
+    </description>
+  </subsection>
+</section>

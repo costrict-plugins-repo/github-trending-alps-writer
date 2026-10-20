@@ -1,0 +1,53 @@
+{
+  "name": "alps-writer",
+  "//version": "Intentionally pinned to 0.0.0 and NOT the release version. This package is private (never published to npm) — the MCP server ships as a bundle inside the plugin, so the version users see comes from .claude-plugin/plugin.json and the serverInfo literal in src/index.ts. See scripts/bump-version.mjs.",
+  "version": "0.0.0",
+  "private": true,
+  "description": "MCP server for interactive ALPS (PRD) writing with AI — bundled and shipped inside the alps-writer Claude Code plugin (dist/index.js).",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "bundle": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node24 --outfile=dist/index.js",
+    "build": "pnpm typecheck && pnpm bundle && rm -rf dist/templates dist/guides && cp -r src/templates dist/ && cp -r src/guides dist/",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "tsx --test tests/**/*.test.ts",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "keywords": [
+    "mcp",
+    "alps",
+    "prd",
+    "product-requirements",
+    "agentic-lean-product-spec",
+    "specification",
+    "ai",
+    "model-context-protocol"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/haandol/alps-writer-plugins",
+    "directory": "plugins/alps-writer"
+  },
+  "author": "haandol",
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.9.1",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.0"
+  }
+}
