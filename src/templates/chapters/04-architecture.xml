@@ -1,0 +1,70 @@
+<section id="4" title="High-Level Architecture">
+  <description>
+- Section 4 answers which system boundaries and constraints a regenerated implementation must preserve.
+- It does NOT inventory technologies that a developer can recover from code or dependency metadata. Frameworks, SDKs, ORMs, internal database products, credential wiring, and CI tools remain implementation discretion unless a product, contract, regulation, or external boundary mandates the choice.
+- Section 4.1 shows the product and major runtime/data boundaries once. Section 4.2 records only durable architecture constraints. Section 7.3 explains how one Feature crosses the approved boundaries without re-declaring implementation technology.
+- `/feature-to-adr` later transfers durable contracts and boundaries into ADRs and leaves replaceable technology means to code. After successful handoff, ADRs are the implementation authority and this Section remains legacy planning context.
+  </description>
+  <subsection id="4.1" title="System Diagram">
+    <description>
+- Provide both a Context diagram and a Container diagram using Mermaid C4 syntax.
+- The Context diagram is required. Show the people, external systems, the target system, and their relationships.
+- The Container diagram is required. Show the major independently running or deployable applications and data stores inside the target system, their responsibilities, durable boundaries, and relationships.
+- These are the only C4 levels allowed in an ALPS PRD. Do not generate Component, Dynamic, Deployment, or Code-level C4 diagrams.
+- Keep modules, classes, functions, files, methods, libraries, frameworks, and other implementation details out of both diagrams.
+    </description>
+    <example>
+```mermaid
+C4Context
+
+title System Context Diagram for Document Assistant
+
+Person(author, "Document Author", "Creates a product document through conversation")
+System(documentAssistant, "Document Assistant", "Guides the author and produces the document")
+System_Ext(llm, "LLM Service", "Generates guided questions and draft content")
+
+Rel(author, documentAssistant, "Authors a document with")
+Rel(documentAssistant, llm, "Requests language generation from")
+```
+
+```mermaid
+C4Container
+
+title Container Diagram for Document Assistant
+
+Person(author, "Document Author", "Creates a product document through conversation")
+System_Ext(llm, "LLM Service", "Generates guided questions and draft content")
+
+System_Boundary(documentAssistant, "Document Assistant") {
+    Container(webApp, "Web Application", "Web UI", "Runs the guided authoring conversation")
+    Container(api, "Application API", "Server application", "Manages the authoring workflow and document state")
+    ContainerDb(documentStore, "Document Store", "Persistent storage", "Stores approved product documents")
+}
+
+Rel(author, webApp, "Uses")
+Rel(webApp, api, "Sends approved section content to")
+Rel(api, documentStore, "Reads and writes")
+Rel(api, llm, "Requests language generation from")
+```
+    </example>
+  </subsection>
+  <subsection id="4.2" title="Architecture Constraints">
+    <description>
+- Record only conditions a regenerated implementation must preserve:
+  - Scale assumption: expected total and concurrent usage when it constrains the product or an NFR.
+  - Access boundary: required user channels such as browser, mobile, or both.
+  - Mandated platform or external provider: only when a contract, regulation, organization policy, or durable system boundary requires it.
+  - Data and security boundary: residency, isolation, trust, encryption, or privacy constraints.
+  - Deployment boundary: required regions, environments, availability, recovery, or offline constraints.
+- State the requirement and its basis. Do not list a technology merely because it is the current or recommended implementation.
+- Exclude replaceable frameworks, SDKs, ORMs, internal database products, credential plumbing, module layouts, CI tools, and tuning values. Code and dependency metadata own those facts.
+- If no additional durable constraints exist beyond Section 4.1, state that directly instead of inventing a technology recommendation.
+    </description>
+    <example>
+- Scale assumption: ~1,000 total users at launch, tens concurrent at peak
+- Access boundary: users access the MVP through a web browser.
+- Data boundary: customer documents remain in the contracted region.
+- External provider boundary: the model provider must satisfy the organization's no-training data policy.
+    </example>
+  </subsection>
+</section>
